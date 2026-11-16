@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DentaPlan AI – Treatment Plan Assistant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/styles.css">
+<script src="src/vendor/jspdf.umd.min.js"></script>
+<script src="src/vendor/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="logo">🦷</span><div><b>DentaPlan AI</b><small>From clinical conversation to patient-ready treatment plan</small></div></div>
+  <ol class="steps" id="steps"><li data-s="1">Dictate</li><li data-s="2">Clarify</li><li data-s="3">Review PDF</li><li data-s="4">Approve</li></ol>
+  <span class="status" id="status" aria-live="polite">Draft</span>
+</header>
+<main class="grid">
+  <section class="card" id="dictate">
+    <h2>1 · Dictate the treatment</h2>
+    <div class="row">
+      <label>Patient<input id="patient" placeholder="e.g. Jane Doe"></label>
+      <label>Dentist<input id="dentist" value="Dr. R.A."></label>
+    </div>
+    <div class="row">
+      <label>Clinic<input id="clinic" value="Smile Clinic Paris"></label>
+      <label>Language<select id="lang"><option value="en-GB">English</option><option value="fr-FR">Français</option></select></label>
+    </div>
+    <div class="mic-row">
+      <button class="mic" id="mic" title="Start / stop voice dictation"><span>●</span> Record</button>
+      <div class="hint" id="micHint">Click Record and speak. The transcript appears live and stays editable.</div>
+    </div>
+    <textarea id="transcript" rows="11" placeholder="Dictated transcript… e.g. Stage 1: pre-operative hygiene, implant placement at sites 15 and 16. Stage 2 – after 3 months: healing abutments on 2 implants, zirconia crowns on 2 implants."></textarea>
+    <div class="row">
+      <select id="sample"><option value="">Load a sample dictation…</option></select>
+      <label class="file">📎 Attach image / X-ray<input type="file" id="img" accept="image/png,image/jpeg" multiple></label>
+    </div>
+    <div id="images" class="thumbs"></div>
+    <div class="actions"><button class="primary" id="build">Build plan &amp; PDF</button><button class="ghost" id="reset">New plan</button></div>
+  </section>
+
+  <section class="card" id="plancard">
+    <h2>2 · Plan &amp; clarifying questions</h2>
+    <div id="summary" class="summary muted">No plan yet. Dictate or load a sample, then build.</div>
+    <div id="questions"></div>
+    <div class="actions"><button class="primary" id="applyAnswers" disabled>Apply answers &amp; regenerate PDF</button></div>
+    <div id="plan"></div>
+    <h3>Corrections (voice or text)</h3>
+    <div class="mic-row"><button class="mic small" id="mic2"><span>●</span> Speak</button>
+      <input id="correction" placeholder='e.g. "Change the price of the implant to €1200. Add bone graft as a separate stage."'></div>
+    <div class="actions"><button id="applyCorrection" disabled>Apply correction &amp; regenerate</button></div>
+  </section>
+
+  <section class="card" id="review">
+    <h2>3 · Review &amp; approve</h2>
+    <div class="pdfwrap"><iframe id="pdf" title="PDF preview"></iframe><div id="pdfEmpty" class="muted center">The PDF preview appears here.</div></div>
+    <div class="actions">
+      <button class="approve" id="approve" disabled>Approve</button>
+      <button id="download" disabled>Download PDF</button>
+      <button id="send" disabled>Send to patient</button>
+    </div>
+    <p class="gate" id="gate">🔒 Download and sending unlock only after explicit dentist approval of the latest version.</p>
+    <h3>Version history</h3>
+    <ul id="versions" class="versions"></ul>
+    <div id="diff" class="diff"></div>
+  </section>
+</main>
+<footer>POC · deterministic extraction against the clinic price list (no invented prices) · data stays in your browser · <a href="https://github.com/daniel-ao/dental-plan-assistant">GitHub</a></footer>
+<script type="module" src="src/app.js"></script>
+</body></html>
