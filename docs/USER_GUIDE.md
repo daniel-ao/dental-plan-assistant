@@ -2,7 +2,7 @@
 
 The assistant turns a dictated treatment plan into a staged, priced, patient-friendly PDF. You stay in control. The assistant asks about anything unclear, every PDF is saved as a new version, and nothing can be downloaded or sent until you approve it.
 
-> Demo only: do not enter real patient data. Everything is stored in this browser (localStorage).
+> Demo only: do not enter real patient data. Everything stays in this browser tab and is cleared on reload.
 
 ## Before you start
 
