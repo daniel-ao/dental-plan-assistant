@@ -1,6 +1,6 @@
 # DentaPlan AI — Brand & UI/UX Design System
 
-Version 0.1 (POC). Source of truth for tokens: `src/styles.css`. Source of truth for structure: `index.html`. PDF styling lives in `src/pdf.js`.
+Version 0.2 (POC, UI refresh). Source of truth for tokens: `src/styles.css`. Source of truth for structure: `index.html`. PDF styling lives in `src/pdf.js`.
 
 ---
 
@@ -36,10 +36,10 @@ Microcopy examples:
 | Suspicious text | "This sentence looks like an instruction to the app, not part of the plan. It was not applied." | "Hack detected" |
 
 ### 1.4 Logo usage
-- **Mark (placeholder):** the 🦷 tooth emoji at 28px (`.logo`), followed by the wordmark **DentaPlan AI** in Inter 600/700 and the tagline in `<small>` at 12px, 85% opacity.
-- Lock-up sits on the teal header gradient, white text only.
+- **Mark:** a single-colour outlined tooth glyph drawn inline in SVG (`.logo`, 28px, white 1.6 stroke), followed by the wordmark **DentaPlan AI** in Inter 700 and the tagline in `<small>` at 12px, 80% opacity. The tagline is hidden below 700px.
+- Lock-up sits on the flat `--head` header colour, white only.
 - Clear space: at least the height of the mark on every side. Do not recolour, rotate or add effects to the mark.
-- The emoji is a POC placeholder. A production mark should be a simple single-colour tooth glyph drawn in SVG so it renders the same on every OS and in the PDF.
+- No emoji anywhere in the UI. Icons are 16px inline SVG line icons (`.ic`, 2px stroke, `currentColor`), used only where they carry meaning (lock, check, attach).
 
 ---
 
@@ -47,29 +47,34 @@ Microcopy examples:
 
 ### 2.1 Colour tokens
 
-Defined on `:root` in `src/styles.css`; dark values via `prefers-color-scheme: dark`.
+Defined on `:root` in `src/styles.css`. Dark values apply under `prefers-color-scheme: dark` (unless `data-theme="light"`) and under `:root[data-theme="dark"]`. Neutrals are tinted toward the brand teal; dark mode is its own teal-grey palette, not an inversion.
 
 | Token | Light | Dark | Role |
 |---|---|---|---|
-| `--bg` | `#f5f7fb` | `#0b1120` | App background, input fill, table header |
-| `--card` | `#ffffff` | `#111827` | Card surface, default button |
-| `--ink` | `#0f172a` | `#e5e7eb` | Primary text |
-| `--muted` | `#64748b` | `#94a3b8` | Secondary text, labels, hints |
-| `--line` | `#e2e8f0` | `#1f2937` | Borders, dividers |
-| `--teal` | `#0d9488` | `#0d9488` | Primary action, selected chip, stage headings, links |
-| `--teal2` | `#14b8a6` | `#14b8a6` | Accent / hover highlight |
-| (header) | `#0f766e → #0d9488` | same | Header gradient, status pill text |
-| `--warn` | `#c2410c` | `#c2410c` | High-priority question border, TBC rows |
-| `--warnbg` | `#fff7ed` | `#2a1608` | Open question background |
-| `--ok` | `#047857` | `#047857` | Approve button, answered question, unlocked gate |
-| (medium) | `#d97706` | same | Medium-priority question border |
-| (record) | `#fee2e2` / `#b91c1c`, active `#dc2626` | same | Record button idle / recording |
+| `--bg` | `#f3f6f5` | `#0b1413` | App background |
+| `--card` | `#ffffff` | `#111c1b` | Card surface, default button, chips |
+| `--sunk` | `#eef3f2` | `#0d1817` | Input fill, PDF frame, diff box, hover row |
+| `--ink` | `#0f1f1d` | `#e3ecea` | Primary text |
+| `--muted` | `#56676a` | `#98aba8` | Secondary text, labels, hints, table headers |
+| `--line` | `#dde6e4` | `#22322f` | Borders, dividers |
+| `--teal` | `#0d9488` | `#0d9488` | Accent rules: current version, focused field, focus ring (light) |
+| `--btn` / `--btn-hover` | `#0f766e` / `#115e59` | same | Primary button and selected chip fill (white text 5.5:1) |
+| `--teal-ink` | `#0f766e` | `#2dd4bf` | Teal as text: step numbers, links, primary hover (light) |
+| `--teal2` | `#14b8a6` | `#14b8a6` | Reserved accent |
+| `--head` | `#0f766e` | `#0c2724` | Flat header background |
+| `--warn` | `#c2410c` | `#f0894a` | High-priority border, TBC rows, open counts |
+| `--warnbg` | `#fff7ed` | `#24170d` | Open question background |
+| `--medium` | `#d97706` | `#e3a23b` | Medium-priority question border |
+| `--ok` | `#047857` | `#047857` | Approve button fill |
+| `--ok-ink` | `#047857` | `#34d399` | Approved / answered as text or border |
+| `--rec` | `#dc2626` | `#dc2626` | Recording dot and active record button |
 
 Rules:
 - Teal means "the main thing to do next". Use it for one primary button per card.
 - Orange (`--warn`) means "needs the dentist's attention". Never use it decoratively.
 - Green (`--ok`) means "approved / resolved". Reserved for approval and answered states.
-- Red is reserved for the microphone (live recording). It is not an error colour here.
+- Red is reserved for the microphone (the record dot and live recording). It is not an error colour here.
+- No gradients, glows or glass effects.
 - Do not convey state with colour alone: pair it with text (priority label, "TBC", "Approved", lock icon).
 
 ### 2.2 Typography
@@ -78,19 +83,21 @@ Rules:
 
 | Use | Size / weight |
 |---|---|
-| Card title `h2` | 16px / 700 |
-| Section label `h3` | 13px / 700, uppercase, letter-spacing .04em, `--muted` |
-| Body, inputs, buttons | 14px (buttons 600) |
-| Labels, hints, tables, stepper | 12px |
-| Question meta | 11px uppercase, .04em |
-| Summary pill value | 16px bold |
+| Plan total (summary lead) | 26px / 700, -.02em |
+| Card title `h2` | 17px / 700, step number 13px / 600 in `--teal-ink` |
+| Secondary stats | 18px / 600 |
+| Body, inputs, buttons | 14px, line-height 1.45 (textarea 1.55); buttons 600 |
+| Tables, stepper | 13px |
+| Labels, hints | 12px / 500 |
+| Section label `h3`, table header, question meta | 11–12px / 600 uppercase, .05em, `--muted` |
 
-- Numbers (prices, totals) right-aligned (`td.r`) and never wrapped.
+- Numbers use tabular figures, prices right-aligned (`td.r`) and never wrapped. Question text is capped at 68ch.
 
 ### 2.3 Spacing, radius, elevation
 - **Spacing scale (px):** 4, 6, 8, 10, 12, 16, 18, 24. Grid gap and page padding 16; card padding 18; header padding 14/24.
-- **Radius:** 6 (thumbnails), 8 (inputs, buttons, version rows), 10 (questions, pills, PDF frame), 14 (cards), 999 (stepper pills).
-- **Elevation:** flat. Cards use a 1px `--line` border plus `0 1px 2px rgba(0,0,0,.04)`. Depth comes from borders, not shadows. The only animated shadow is the recording pulse.
+- **Spacing (v0.2):** grid gap and page padding 20 (16 below 1100px, 12 on phone); card padding 20 (16 on phone); 24 above section labels.
+- **Radius:** 6 (thumbnails, status), 8 (inputs, buttons, question right edge), 10 (PDF frame), 12 (cards), 50% (step numbers).
+- **Elevation:** flat, no shadows. Cards use a 1px `--line` border. The Review column is a quiet surface (no card) on wide screens so the plan reads as the main work area. The only animated shadow is the recording pulse.
 
 ---
 
@@ -105,16 +112,16 @@ Rules:
 ## 4. Components
 
 ### 4.1 Header and stepper
-Teal gradient bar with brand lock-up, a four-step stepper and a status pill.
-- Steps: **Dictate → Clarify → Review PDF → Approve**.
-- States: default (white 15% fill), `.on` (white fill, teal text, 600), `.done` (white 35% fill).
-- Exactly one step is `.on` at a time.
+Flat `--head` bar with brand lock-up, a numbered progress line and the status label.
+- Steps: **Dictate → Clarify → Review PDF → Approve**, numbered circles joined by hairlines (CSS counters, no extra markup).
+- States: default (70% white text, outlined number), `.on` (white text 600, filled white number), `.done` (number replaced by a check).
+- Exactly one step is `.on` at a time. Below 700px the stepper drops to its own row and shows only the current step's label.
 
 ### 4.2 Status pill
-`.status`: white chip, teal 600 text, 12px. Shows the document state: `Draft`, `Draft v2`, `Approved v3`. Any edit after approval returns it to `Draft vN`.
+`.status`: 14% white fill on the header, white 600 text, 12px, radius 6. Shows the document state: `Draft`, `Draft v2`, `Approved v3`. Any edit after approval returns it to `Draft vN`.
 
 ### 4.3 Cards
-`.card` is the only container. One card per workflow stage, one `h2` per card, one primary button per card.
+`.card` is the only container. One card per workflow stage, one `h2` per card, one primary button per card. `.card.quiet` (Review) drops its surface above 1100px.
 
 ### 4.4 Buttons
 | Variant | Class | Use |
@@ -122,20 +129,22 @@ Teal gradient bar with brand lock-up, a four-step stepper and a status pill.
 | Primary | `.primary` | Build plan, Apply answers |
 | Approve | `.approve` | Approve the current version (green) |
 | Default | none | Download, Send, Apply correction |
-| Ghost | `.ghost` | New plan / reset |
+| Ghost | `.ghost` | New plan / reset (muted text, no border until hover) |
 | Disabled | `:disabled` | 45% opacity, `not-allowed` cursor |
+
+All buttons and fields are at least 44px high. Hover changes the border only; no movement or scaling.
 
 ### 4.5 Record button
 `.mic` (and `.mic.small` for the correction field).
-- **Idle:** pale red fill `#fee2e2`, red text, label "● Record" / "● Speak".
-- **Recording:** `.rec`, solid `#dc2626`, white text, 1.2s pulse ring. Label changes to "■ Stop".
+- **Idle:** default button with a 9px red dot (the `●` span, drawn in CSS), label "Record" / "Speak".
+- **Recording:** `.rec`, solid `--rec`, white text, the dot becomes a white square, soft 1.6s ring. Label changes to "Stop". Reduced motion shows a static ring.
 - **Unavailable / denied:** button disabled, hint text explains that typing works the same way. The transcript area always stays editable.
 
-### 4.6 Summary pills
-`.pill` inside `.summary`: stages, items, total, open questions. Value bold 16px above a 12px label.
+### 4.6 Plan summary
+`.summary` is one stat row, not boxes. The total (`.pill.main`) leads on its own line at 26px, labelled "excluding TBC" when needed. Stages, Items TBC and Open questions follow, separated by hairlines. Non-zero TBC/open counts use `--warn` (`.attn`).
 
 ### 4.7 Question cards
-`.q` with a 4px left border coding priority, plus a meta line naming the priority in text.
+`.q` with a 3px left border coding priority (no other border), plus a meta line naming the priority in text.
 
 | State | Border | Background |
 |---|---|---|
@@ -147,23 +156,23 @@ Teal gradient bar with brand lock-up, a four-step stepper and a status pill.
 High-priority questions sort first. A "Suspicious instruction" question (see the security doc) is always High.
 
 ### 4.8 Option chips
-`.opts button`: 12px, 500 weight, compact. Selected chip `.sel` is teal with white text. A free-text input can sit in the same row for "Other".
+`.opts button`: 13px, 500 weight, 36px high (44px on touch screens). Selected chip `.sel` is teal with white text. A free-text input can sit in the same row for "Other".
 
 ### 4.9 Stage tables
-- `.stagehead` (teal, bold) titles each stage, e.g. "Stage 2 — after 3 months".
+- `.stagehead` (ink, 600) titles each stage, e.g. "Stage 2 · Healing abutments · After 3 months", with timing in `--muted`. Table headers are small uppercase muted text with no fill.
 - Columns: item, teeth, qty, unit price, line total (right-aligned).
 - `tr.tbc` rows render in `--warn` when a price or quantity is still to be confirmed. They are never hidden or zeroed.
 
 ### 4.10 PDF preview
-`.pdfwrap` 520px framed area with an `iframe`. Empty state: centred muted text "The PDF preview appears here."
+`.pdfwrap` 560px framed area (460px on phone) with an `iframe`. Empty, it collapses to its message: "The PDF draft shows here once the plan is built."
 
 ### 4.11 Version list and diff
-- `.versions li`: one row per version (label left, timestamp `small` right). Current version has a teal border (`.cur`). Click to preview.
+- `.versions li`: one row per version (label left, timestamp `small` right). 2px left rule; the current version (`.cur`) has a teal rule and card fill. Click to preview.
 - `.diff`: compact list of what changed between versions (added / removed / repriced items).
 
 ### 4.12 Approval gate
-- `.gate` message under the Approve / Download / Send bar: "🔒 Download and sending unlock only after explicit dentist approval of the latest version."
-- `.gate.ok` (green) once the latest version is approved.
+- `.gate` message under the Approve / Download / Send bar, with a lock icon: "Download and sending unlock only after explicit dentist approval of the latest version."
+- `.gate.ok` (`--ok-ink`, check icon) once the latest version is approved.
 - Download and Send stay disabled until then. Any new version re-locks them.
 
 ---
@@ -196,10 +205,10 @@ PDF typography uses Helvetica (jsPDF built-in) as the closest safe match to Inte
 
 ## 7. Accessibility
 
-- **Contrast (WCAG 2.1 AA):** `--ink` on `--bg`/`--card`, white on `--teal` `#0d9488` for 14px bold button text (meets the 3:1 large/bold threshold; use `#0f766e` for small regular white text), `--warn` on `--warnbg`, `--ok` white text. Known gap: `--muted` `#64748b` is about 4.8:1 on white cards but about 4.4:1 on `--bg` `#f5f7fb`, just under 4.5:1 for 12px text. Darken to `#5b6b80` (or keep muted text on cards only) before production.
+- **Contrast (WCAG 2.1 AA):** `--ink` on `--bg`/`--card`, white on `--btn` `#0f766e` (5.5:1) for buttons and selected chips, `--warn` on `--warnbg`, `--ok` white text. `--muted` is above 4.5:1 on every surface in both themes. In dark mode, teal and orange text use the lighter `--teal-ink` / `--warn` values to stay above 4.5:1.
 - **Not colour alone:** priority, TBC and approval states always carry a text label.
-- **Keyboard:** all actions are native `<button>`, `<input>`, `<select>`. Logical tab order follows the columns. Visible focus outline must not be removed.
+- **Keyboard:** all actions are native `<button>`, `<input>`, `<select>`. Logical tab order follows the columns. Every control shows a 2px `--focus` outline on `:focus-visible`; fields also get a teal border and soft ring.
 - **Screen readers:** labelled form fields (`<label>` wrapping inputs), `title` on the PDF iframe and mic buttons. Status changes (recording started, plan built, version approved) should be announced through an `aria-live="polite"` region.
 - **Motion:** the recording pulse should respect `prefers-reduced-motion` (static ring instead).
 - **Microphone fallback:** if the Web Speech API is missing or permission is denied, the mic button disables with an explanation and the typed transcript works the same way.
-- **Touch targets:** buttons at least 36px high; chips at least 32px, with 6px gaps.
+- **Touch targets:** buttons and fields at least 44px high; chips 36px with 6px gaps, 44px on touch screens.
