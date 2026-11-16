@@ -4,12 +4,12 @@
 
 - **Status:** Accepted
 - **Context:** The POC was a 30-minute build that had to show the four course criteria with a public demo URL, without secrets and without handling real patient data on a server.
-- **Decision:** Build a static HTML/CSS/ES-module app with no backend. All state (plans, versions, PDFs, audit log) lives in the browser's localStorage.
+- **Decision:** Build a static HTML/CSS/ES-module app with no backend. All state (plans, versions, PDFs, audit log) lives in browser memory for the session.
 - **Consequences:**
   - (+) No hosting cost or operations, no API keys, and patient data never reaches a server we run.
   - (+) Anyone can open and evaluate it.
   - (−) There is no multi-user access, auth, durable storage or real email.
-  - (−) localStorage is per browser and unencrypted.
+  - (−) Versions are lost on reload (download the approved PDF).
   - These gaps are covered by the target architecture in `PRODUCT_ARCHITECTURE.md` §10.
 
 ## ADR-002: Deterministic rule-based extraction instead of an LLM (for the POC)

@@ -341,7 +341,7 @@ Key points:
 
 | Topic | MVP | Production |
 |---|---|---|
-| Data location | Browser only (localStorage); nothing sent to a server we run | EU region, HDS-certified provider |
+| Data location | Browser memory only; nothing sent to a server we run | EU region, HDS-certified provider |
 | Speech | Browser engine; vendor may process audio server-side | Self-hosted or contracted STT under DPA, no training on data |
 | Encryption | None beyond the browser profile | TLS 1.2+, AES-256 at rest, KMS-managed keys |
 | Access control | None (single local user) | OAuth2/OIDC, RBAC, MFA for dentists |
@@ -378,7 +378,7 @@ Do not enter real patient data into the public POC.
 | Patient receives unapproved plan | Trust / liability | Download/send disabled until approval; DRAFT watermark |
 | Data leakage | GDPR breach | POC client-only; production EU/HDS hosting, encryption, RBAC |
 | Browser without Web Speech API | Criterion 1 not demonstrable | Text fallback; recommend Chrome/Edge for demo |
-| localStorage cleared | History lost | Export/download PDFs; production DB |
+| Page reloaded | History lost | Export/download PDFs; production DB |
 
 ## 14. Roadmap
 
