@@ -1,9 +1,9 @@
 // UI orchestrator: wires the agents together and owns state, versions and the approval gate.
-import { buildPlan } from './engine/plan.js';
-import { applyCorrection } from './engine/revise.js';
-import { guardText } from './engine/guard.js';
-import { renderPdf } from './pdf.js';
-import { SAMPLES } from './samples.js';
+import { buildPlan } from './engine/plan.js?v=5';
+import { applyCorrection } from './engine/revise.js?v=5';
+import { guardText } from './engine/guard.js?v=5';
+import { renderPdf } from './pdf.js?v=5';
+import { SAMPLES } from './samples.js?v=5';
 
 const $ = id => document.getElementById(id);
 const eur = n => (n == null ? 'TBC' : '€' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
