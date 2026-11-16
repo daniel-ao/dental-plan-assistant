@@ -1,6 +1,6 @@
 # DentaPlan AI — Brand & UI/UX Design System
 
-Version 0.3 (POC, "enamel & chart" theme). Source of truth for tokens: `src/styles.css`. Source of truth for structure: `index.html`. PDF styling lives in `src/pdf.js`.
+Version 0.4 (POC, bright clinical palette on the "enamel & chart" layout). Source of truth for tokens: `src/styles.css`. Source of truth for structure: `index.html`. PDF styling lives in `src/pdf.js`.
 
 ---
 
@@ -45,7 +45,29 @@ Microcopy examples:
 
 ## 2. Foundations
 
-### 2.1 Colour tokens
+### 2.1 Colour tokens (v0.4, bright clinical)
+
+The app is **light by default and stays light when the device is in dark mode**, because clinical tools read as bright and clean. Dark values remain only behind `:root[data-theme="dark"]` (opt-in). Light tokens:
+
+| Token | Value | Role |
+|---|---|---|
+| `--paper` / `--glow` | `#f4faff` / `#e3f3ff` | Page, with a soft sky wash at the top |
+| `--sheet` | `#ffffff` | Plan sheet (4px blue top edge), inputs, chips |
+| `--ink` | `#0b2540` | Text, table rules |
+| `--muted` | `#4f6478` | Labels, meta |
+| `--line` | `#d5e6f2` | Hairlines |
+| `--accent` / `--accent-ink` | `#0a84ff` / `#0062cc` | Medical blue: current step, logo, dentition strip, current version |
+| `--btn` | `#0066e0` (white text, AA) | Primary buttons |
+| `--mint` / `--mint-ink` | `#d6f7ec` / `#08775a` | Status label, answered questions |
+| `--ok` | `#0b8a63` | Approve button, approval stamp |
+| `--warn` / `--warnbg` / `--medium` | `#9a5b00` / `#fff4dc` / `#f0a020` | Open questions |
+| TBC / attention | `#c2410c` | TBC rows, non-zero open counts |
+| `--rec` | `#e5484d` | Record only |
+
+v0.3 table below is kept for the opt-in dark palette.
+
+#### v0.3 tokens (historical; dark values still used by `data-theme="dark"`)
+
 
 Defined on `:root` in `src/styles.css` (light), with a designed dark palette under `prefers-color-scheme: dark` and `:root[data-theme="dark"]`. Mood: enamel white, deep clinical navy, mint for resolved states, one coral accent.
 
