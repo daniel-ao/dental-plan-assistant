@@ -9,6 +9,11 @@ const $ = id => document.getElementById(id);
 const eur = n => (n == null ? 'TBC' : '€' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+const ICON = {
+  lock: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  check: '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+};
+
 const S = { answers: {}, pending: {}, corrections: [], versions: [], images: [], current: null, status: 'Draft', approvedVersion: null, guard: [] };
 const STATUS_STEP = { 'Draft': 1, 'Missing Information': 2, 'Awaiting Dentist Review': 3, 'Changes Requested': 3, 'Approved': 4, 'Sent to Patient': 4 };
 
@@ -85,7 +90,7 @@ $('applyCorrection').onclick = () => {
   S.corrections.push(g.text); $('correction').value = '';
   setStatus('Changes Requested');
   run('Correction: ' + preview.changes.join('; '));
-  if (blocked) $('diff').insertAdjacentHTML('afterbegin', `<p style="color:var(--warn)"><b>⚠ ${esc(blocked)}</b></p>`);
+  if (blocked) $('diff').insertAdjacentHTML('afterbegin', `<p class="alert">${esc(blocked)}</p>`);
 };
 $('reset').onclick = () => { Object.assign(S, { answers: {}, pending: {}, corrections: [], versions: [], images: [], current: null, approvedVersion: null }); $('transcript').value = ''; $('images').innerHTML = ''; $('sample').value = ''; setStatus('Draft'); render(); $('pdf').style.display = 'none'; $('pdfEmpty').style.display = 'block'; };
 
@@ -105,7 +110,7 @@ $('send').onclick = () => {
   v.doc.save(fname(v)); v.sentAt = new Date().toISOString(); setStatus('Sent to Patient'); render();
   location.href = `mailto:?subject=${encodeURIComponent('Your treatment plan')}&body=${encodeURIComponent(`Dear ${v.plan.patientName || 'patient'},\n\nPlease find attached your personalised treatment plan (version ${v.n}, total ${eur(v.plan.total)}).\n\nKind regards,\n${v.plan.dentist}`)}`;
 };
-function alertBox(msg) { $('diff').innerHTML = `<p style="color:var(--warn)"><b>⚠ ${esc(msg)}</b></p>`; }
+function alertBox(msg) { $('diff').innerHTML = `<p class="alert">${esc(msg)}</p>`; }
 
 // ---------- Rendering ----------
 function render() {
@@ -116,26 +121,26 @@ function render() {
   const approved = !!S.approvedVersion && S.approvedVersion === last?.n;
   $('download').disabled = !approved; $('send').disabled = !approved;
   $('gate').className = 'gate' + (approved ? ' ok' : '');
-  $('gate').textContent = approved ? `✅ v${S.approvedVersion} approved by ${last.by} – download and sending unlocked.` : '🔒 Download and sending unlock only after explicit dentist approval of the latest version.';
-  if (!c) { $('summary').innerHTML = 'No plan yet. Dictate or load a sample, then build.'; $('questions').innerHTML = ''; $('plan').innerHTML = ''; $('versions').innerHTML = ''; $('diff').innerHTML = ''; return; }
+  $('gate').innerHTML = approved ? `${ICON.check}<span>v${S.approvedVersion} is approved (${esc(last.by)}). Download and sending are unlocked.</span>` : `${ICON.lock}<span>Download and sending unlock only after explicit dentist approval of the latest version.</span>`;
+  if (!c) { $('summary').innerHTML = 'No plan yet. Dictate the treatment or load a sample, then press Build plan.'; $('questions').innerHTML = ''; $('plan').innerHTML = ''; $('versions').innerHTML = ''; $('diff').innerHTML = ''; return; }
   const p = c.plan;
   $('summary').className = 'summary';
-  $('summary').innerHTML = `<div class="pill"><small>Stages</small><b>${p.stages.length}</b></div><div class="pill"><small>Total estimate</small><b>${eur(p.total)}</b></div><div class="pill"><small>Items TBC</small><b>${p.tbcCount}</b></div><div class="pill"><small>Open questions</small><b>${c.open.length + S.guard.length}</b></div>`;
+  $('summary').innerHTML = `<div class="pill main"><small>Total estimate${p.tbcCount ? ', excluding TBC' : ''}</small><b>${eur(p.total)}</b></div><div class="pill"><small>Stages</small><b>${p.stages.length}</b></div><div class="pill${p.tbcCount ? ' attn' : ''}"><small>Items TBC</small><b>${p.tbcCount}</b></div><div class="pill${c.open.length + S.guard.length ? ' attn' : ''}"><small>Open questions</small><b>${c.open.length + S.guard.length}</b></div>`;
   const guardHtml = S.guard.map(f => `<div class="q"><div class="meta">high · security</div><p>Suspicious instruction ignored (${esc(f.why)}): “${esc(f.snippet)}”. It was treated as data and not acted on.</p></div>`).join('');
   $('questions').innerHTML = guardHtml + c.questions.map(q => {
     const val = S.pending[q.id] ?? q.answer;
     return `<div class="q ${q.priority} ${q.answer != null ? 'answered' : ''}" data-q="${esc(q.id)}"><div class="meta">${q.priority} · ${esc(q.category)}${q.answer != null ? ' · answered' : ''}</div><p>${esc(q.text)}</p>
       <div class="opts">${q.options.map(o => `<button data-v="${esc(o.value)}" class="${val === o.value ? 'sel' : ''}">${esc(o.label)}</button>`).join('')}${q.free || !q.options.length ? `<input placeholder="Type answer…" value="${val != null && !q.options.some(o => o.value === val) ? esc(val) : ''}">` : ''}</div></div>`;
-  }).join('') || '<p class="muted">✅ No open questions – the plan is complete.</p>';
+  }).join('') || '<p class="muted">No open questions. The plan is complete and ready for review.</p>';
   document.querySelectorAll('.q[data-q]').forEach(el => {
     const id = el.dataset.q;
     el.querySelectorAll('button').forEach(b => b.onclick = () => { S.pending[id] = b.dataset.v; el.querySelectorAll('button').forEach(x => x.classList.toggle('sel', x === b)); });
     const inp = el.querySelector('input'); if (inp) inp.oninput = () => { if (inp.value.trim()) S.pending[id] = inp.value.trim(); else delete S.pending[id]; };
   });
-  $('plan').innerHTML = p.stages.map(s => `<div class="stagehead">Stage ${s.number} · ${esc(s.title)} <span class="muted">— ${esc(s.interval || 'timing TBC')}</span></div>
+  $('plan').innerHTML = p.stages.map(s => `<div class="stagehead">Stage ${s.number} · ${esc(s.title)} <span class="muted">· ${esc(s.interval || 'timing TBC')}</span></div>
     <table><tr><th>Procedure</th><th>Teeth</th><th>Qty</th><th>Unit</th><th>Disc.</th><th>Amount</th></tr>${s.items.map(i => `<tr class="${i.status === 'tbc' ? 'tbc' : ''}" title="Source: ${esc(i.source)}"><td>${esc(i.name)}${i.priceSource === 'dentist' ? ' <small class="muted">(dentist price)</small>' : ''}</td><td>${esc((i.teeth || []).join(', '))}</td><td>${i.qty}</td><td class="r">${eur(i.unitPrice)}</td><td>${i.discountPct ? i.discountPct + '%' : ''}</td><td class="r">${eur(i.lineTotal)}</td></tr>`).join('')}
     <tr><td colspan="5"><b>Subtotal</b></td><td class="r"><b>${eur(s.subtotal)}</b></td></tr></table>`).join('');
-  $('versions').innerHTML = S.versions.slice().reverse().map(v => `<li data-v="${v.n}" class="${v.n === last.n ? 'cur' : ''}"><span><b>v${v.n}</b> · ${esc(v.summary)}<br><small>${new Date(v.at).toLocaleTimeString()} · ${esc(v.by)} · ${eur(v.plan.total)} · ${v.open.length} open${v.approvedAt ? ' · ✅ approved' : ''}${v.sentAt ? ' · 📧 sent' : ''}</small></span></li>`).join('');
+  $('versions').innerHTML = S.versions.slice().reverse().map(v => `<li data-v="${v.n}" class="${v.n === last.n ? 'cur' : ''}"><span><b>v${v.n}</b> · ${esc(v.summary)}<br><small>${new Date(v.at).toLocaleTimeString()} · ${esc(v.by)} · ${eur(v.plan.total)} · ${v.open.length} open${v.approvedAt ? ' · <span class="ok">approved</span>' : ''}${v.sentAt ? ' · sent' : ''}</small></span></li>`).join('');
   document.querySelectorAll('#versions li').forEach(li => li.onclick = () => showVersion(+li.dataset.v));
 }
 
