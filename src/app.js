@@ -79,11 +79,13 @@ $('applyAnswers').onclick = () => {
 $('applyCorrection').onclick = () => {
   const g = guardText($('correction').value.trim());
   if (!g.text.trim() && !g.findings.length) return;
-  if (g.findings.length) { alertBox(`Correction blocked: ${g.findings.map(f => f.why).join(', ')}. Approval and sending can only be done with the buttons.`); if (!g.text.trim()) return; }
+  const blocked = g.findings.length ? `Correction partly blocked (${g.findings.map(f => f.why).join(', ')}). Approval and sending can only be done with the buttons.` : '';
+  if (blocked && !g.text.trim()) { alertBox(blocked); return; }
   const preview = applyCorrection(structuredClone(S.current.plan), g.text);
   S.corrections.push(g.text); $('correction').value = '';
   setStatus('Changes Requested');
   run('Correction: ' + preview.changes.join('; '));
+  if (blocked) $('diff').insertAdjacentHTML('afterbegin', `<p style="color:var(--warn)"><b>⚠ ${esc(blocked)}</b></p>`);
 };
 $('reset').onclick = () => { Object.assign(S, { answers: {}, pending: {}, corrections: [], versions: [], images: [], current: null, approvedVersion: null }); $('transcript').value = ''; $('images').innerHTML = ''; $('sample').value = ''; setStatus('Draft'); render(); $('pdf').style.display = 'none'; $('pdfEmpty').style.display = 'block'; };
 
