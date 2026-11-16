@@ -1,6 +1,6 @@
 # DentaPlan AI — Brand & UI/UX Design System
 
-Version 0.2 (POC, UI refresh). Source of truth for tokens: `src/styles.css`. Source of truth for structure: `index.html`. PDF styling lives in `src/pdf.js`.
+Version 0.3 (POC, "enamel & chart" theme). Source of truth for tokens: `src/styles.css`. Source of truth for structure: `index.html`. PDF styling lives in `src/pdf.js`.
 
 ---
 
@@ -47,27 +47,22 @@ Microcopy examples:
 
 ### 2.1 Colour tokens
 
-Defined on `:root` in `src/styles.css`. Dark values apply under `prefers-color-scheme: dark` (unless `data-theme="light"`) and under `:root[data-theme="dark"]`. Neutrals are tinted toward the brand teal; dark mode is its own teal-grey palette, not an inversion.
+Defined on `:root` in `src/styles.css` (light), with a designed dark palette under `prefers-color-scheme: dark` and `:root[data-theme="dark"]`. Mood: enamel white, deep clinical navy, mint for resolved states, one coral accent.
 
 | Token | Light | Dark | Role |
 |---|---|---|---|
-| `--bg` | `#f3f6f5` | `#0b1413` | App background |
-| `--card` | `#ffffff` | `#111c1b` | Card surface, default button, chips |
-| `--sunk` | `#eef3f2` | `#0d1817` | Input fill, PDF frame, diff box, hover row |
-| `--ink` | `#0f1f1d` | `#e3ecea` | Primary text |
-| `--muted` | `#56676a` | `#98aba8` | Secondary text, labels, hints, table headers |
-| `--line` | `#dde6e4` | `#22322f` | Borders, dividers |
-| `--teal` | `#0d9488` | `#0d9488` | Accent rules: current version, focused field, focus ring (light) |
-| `--btn` / `--btn-hover` | `#0f766e` / `#115e59` | same | Primary button and selected chip fill (white text 5.5:1) |
-| `--teal-ink` | `#0f766e` | `#2dd4bf` | Teal as text: step numbers, links, primary hover (light) |
-| `--teal2` | `#14b8a6` | `#14b8a6` | Reserved accent |
-| `--head` | `#0f766e` | `#0c2724` | Flat header background |
-| `--warn` | `#c2410c` | `#f0894a` | High-priority border, TBC rows, open counts |
-| `--warnbg` | `#fff7ed` | `#24170d` | Open question background |
-| `--medium` | `#d97706` | `#e3a23b` | Medium-priority question border |
-| `--ok` | `#047857` | `#047857` | Approve button fill |
-| `--ok-ink` | `#047857` | `#34d399` | Approved / answered as text or border |
-| `--rec` | `#dc2626` | `#dc2626` | Recording dot and active record button |
+| `--paper` | `#f6f7f4` | `#0e1824` | Page (enamel) |
+| `--sheet` | `#ffffff` | `#13212f` | Plan sheet, inputs, chips |
+| `--sunk` | `#edf3f1` | `#182a3a` | Hover rows |
+| `--ink` / `--rule` | `#12263a` | `#e8eef2` | Text, table rules |
+| `--muted` | `#5a6b7b` | `#9aaab8` | Labels, meta |
+| `--line` | `#d6e0e4` | `#26394a` | Hairlines, dentition strip |
+| `--mint` / `--mint-ink` | `#d4efe5` / `#16654c` | `#123a30` / `#7fd6b4` | Status label, answered questions, AI tag |
+| `--accent` / `--accent-ink` | `#d9534f` / `#b8393a` | `#ff7b72` / `#ff958d` | The one accent: current step, step numbers, record, TBC, current version |
+| `--btn` / `--btn-ink` | `#12263a` / `#fff` | `#e8eef2` / `#0e1824` | Primary buttons, selected chip |
+| `--warn` / `--warnbg` / `--medium` | `#8a5a12` / `#fbf1dc` / `#c58a1e` | `#eab25c` / `#2a2316` / `#eab25c` | Open questions |
+| `--ok` / `--ok-ink` | `#16654c` | `#1f7a5c` / `#7fd6b4` | Approve button, approval stamp |
+| `--focus` | `#2a7de1` | `#7fb6ff` | Focus ring |
 
 Rules:
 - Teal means "the main thing to do next". Use it for one primary button per card.
@@ -78,7 +73,7 @@ Rules:
 - Do not convey state with colour alone: pair it with text (priority label, "TBC", "Approved", lock icon).
 
 ### 2.2 Typography
-- **Family:** `Inter, system-ui, sans-serif`. Base size 14px, line-height ~1.45 in text areas.
+- **Families:** Fraunces (display serif: titles, plan total, stage names), IBM Plex Sans (body, controls), IBM Plex Mono (labels, step numbers, figures, meta). Previously Inter. Base size 14px, line-height ~1.45 in text areas.
 - **Scale:**
 
 | Use | Size / weight |
@@ -100,6 +95,12 @@ Rules:
 - **Elevation:** flat, no shadows. Cards use a 1px `--line` border. The Review column is a quiet surface (no card) on wide screens so the plan reads as the main work area. The only animated shadow is the recording pulse.
 
 ---
+
+### 2.4 Signature details
+- **Dentition strip:** a row of outlined teeth under the letterhead, labelled with FDI quadrant ranges, drawn with a CSS mask in `--line`.
+- **Approval stamp:** the unlocked gate renders as a slightly rotated, bordered mono stamp.
+- **Ruled transcript:** the dictation area is lined like a notepad.
+- **Underlined fields:** inputs are single underlines, like a clinical form.
 
 ## 3. Layout
 
