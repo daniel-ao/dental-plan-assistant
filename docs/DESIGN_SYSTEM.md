@@ -1,6 +1,6 @@
 # DentaPlan AI — Brand & UI/UX Design System
 
-Version 0.4 (POC, bright clinical palette on the "enamel & chart" layout). Source of truth for tokens: `src/styles.css`. Source of truth for structure: `index.html`. PDF styling lives in `src/pdf.js`.
+Version 0.5 (POC, "open sky clinic" theme, adapted from the style reference Daniel supplied on 2026-11-17).
 
 ---
 
@@ -45,7 +45,33 @@ Microcopy examples:
 
 ## 2. Foundations
 
-### 2.1 Colour tokens (v0.4, bright clinical)
+### 2.1 Colour tokens (v0.5, open sky clinic)
+
+Light only. 99% monochrome: white workspace, near-black pill actions, one sky band at the top, surgical blue only for icons and small accents.
+
+| Token | Value | Role |
+|---|---|---|
+| `--obsidian` | `#070709` | Text, primary pill buttons, selected chips |
+| `--charcoal` | `#60606c` | Secondary text, labels, hints |
+| `--slate` | `#8b8b8b` | Placeholders, hover borders |
+| `--hair` / `--line` | `#bebecc` / `#ececf0` | Field and button borders / dividers |
+| `--white` / `--cloud` | `#ffffff` / `#f5f5f5` | Cards / questions, empty states, PDF frame |
+| `--sky-tint` | `#d7e6f5` | Step-number circles |
+| `--blue` / `--blue-ink` | `#2597d0` / `#1b7aab` | Icons, mic glyph, current step, focus ring, "approved" text |
+| `--sky` | `linear-gradient(180deg,#779bc1,#9abfda 58%,#cbdcec)` | Top band only |
+| `--attn` / `--attn-bg` | `#b45309` / `#fdf4e7` | Added for usability: prices to confirm, questions left |
+| `--live` | `#d93636` | Recording state only |
+
+Shadows: cards use the large, very low-opacity blue-tinted stack; primary pills use the four-layer soft lift. Radii: pills 100px, cards 18px, inputs 12px.
+
+Typography: Inter Tight 600 for titles (-0.03 to -0.04em), Inter 16px body (-0.01em). Headline 56px (36px on phone).
+
+Copy: plain language for dentists (e.g. "Create treatment plan", "Needs your answer", "To confirm", "Ready for your review"); internal status names are mapped in `src/app.js` (`STATUS_LABEL`, `PRIORITY_LABEL`).
+
+Layout: two columns (Dictate | Check the plan), "Approve and send" full width below with PDF left and actions right; one column under 1000px.
+
+#### Older tokens (v0.3/v0.4, historical)
+ (v0.4, bright clinical)
 
 The app is **light by default and stays light when the device is in dark mode**, because clinical tools read as bright and clean. Dark values remain only behind `:root[data-theme="dark"]` (opt-in). Light tokens:
 
