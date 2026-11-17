@@ -1,0 +1,4 @@
+# Frozen versions of the app. Each line: <folder> <branch> <release tag>
+# The folder becomes its own link, e.g. https://daniel-ao.github.io/dental-plan-assistant/v1/
+# To freeze a new version: push a branch (e.g. release/v2) and add a line here.
+v1 release/v1 v1.0
