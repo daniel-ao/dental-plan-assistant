@@ -1,8 +1,8 @@
 // Revision Agent: applies natural-language corrections (voice or text) as field-level patches.
 // Unrelated fields are never touched; every command returns a human-readable change summary.
-import { CATALOG } from '../catalog.js?v=5';
-import { matchFragment, byId, IMPLANT_SYSTEMS, CROWNS, familyOf, codeOf } from './extract.js?v=5';
-import { computeTotals } from './plan.js?v=5';
+import { CATALOG } from '../catalog.js?v=7';
+import { matchFragment, byId, IMPLANT_SYSTEMS, CROWNS, familyOf, codeOf } from './extract.js?v=7';
+import { computeTotals } from './plan.js?v=7';
 
 const words = s => s.toLowerCase().match(/[a-z]{4,}/g) || [];
 export function findItems(plan, text) {

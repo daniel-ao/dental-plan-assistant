@@ -228,14 +228,25 @@ High-priority questions sort first. A "Suspicious instruction" question (see the
 
 ## 5. PDF document design
 
-Generated with jsPDF in `src/pdf.js`, A4 portrait.
+Generated with jsPDF in `src/pdf.js`, A4 portrait. Since v2.0 the patient reads the plan at home from an email, so page one explains the whole plan at a glance and the detailed price tables start on page two. Page-one data comes from `src/glance.js` (pure, tested in `tests/glance.test.mjs`): tooth numbers come only from the dictation, and every amount is a stage subtotal or total already computed by the engine.
 
-1. **Header band:** full-width teal band (`#0d9488`) with clinic name, "Treatment plan", patient, dentist, date and version.
-2. **Stage tables:** one per stage, teal stage title, light-grey header row, right-aligned amounts in EUR. TBC lines in orange with the words "to be confirmed".
-3. **Total bar:** full-width bar after the last stage with the plan total. If any line is TBC the label reads "Estimated total (excludes items to be confirmed)".
-4. **Open questions box:** orange-bordered box (`#c2410c`, light orange fill) listing unresolved questions, so nothing uncertain reaches the patient unflagged.
-5. **DRAFT watermark:** large diagonal light-grey "DRAFT" on every page until the dentist approves that exact version. Approved PDFs carry "Approved by <dentist> on <date>, v<N>" in the footer instead.
-6. **Footer:** page numbers, clinic line, and a short note that the estimate is valid subject to clinical review.
+**Page one: the plan at a glance**
+
+1. **Header and patient card:** clinic, status pill (Draft / Approved), version and date; patient, dentist, consultation date, implant system.
+2. **Summary tiles:** estimated total, number of stages, pricing complete or items to confirm.
+3. **"You save" ribbon:** green tag (`#007a4e`) with the total of all discounts and free items, shown only when there is one.
+4. **Today and after treatment:** two dental charts (FDI, patient's right on the left, gentle smile curve). Today: implant sites and teeth to be removed are dashed outlines, other treated teeth are tinted. After: implants and treated teeth are filled in their stage colour. Untreated teeth are light grey. Tooth numbers are printed only on treated teeth. Hidden when no tooth number was dictated.
+5. **Treatment step by step:** one column per stage (up to five per row): numbered circle, stage title, interval, and the amount due at that stage, with "+ N to confirm" when some lines are not priced yet.
+6. **Where the cost goes:** one rounded bar split by stage share of the total, with each stage's amount underneath.
+
+**Stage colours** (white text on each passes 4.5:1): blue `#0066e0`, teal `#008074`, violet `#6f42e6`, amber `#b85400`, rose `#c42670`, ocean `#006991`, then repeating. The same colour is used on the teeth, the timeline, the cost bar, the stage circle and the stage table's header rule.
+
+**Next pages**
+
+7. **Stage tables:** one per stage with a treatment icon beside each line (implant, crown, extraction, cleaning, X-ray/scan, and a small cross for other care), drawn as vector shapes in the stage colour. The price-list section and code sit under each name. Discounts are green. The stage subtotal prints once, after the stage's last line.
+8. **Totals box:** price-list total, "You save" in green, estimated total. Lines to confirm are listed as not included.
+9. **Notes, open questions (drafts only), imaging, important information, dentist approval and patient acceptance.**
+10. **DRAFT watermark** on every page until the dentist approves that exact version, and a footer with clinic, patient, version and page numbers.
 
 PDF typography uses Helvetica (jsPDF built-in) as the closest safe match to Inter. Generated text never contains active links.
 

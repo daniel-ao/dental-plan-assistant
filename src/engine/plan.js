@@ -6,8 +6,8 @@
 //    dentist explicitly dictated or typed, labelled priceSource 'dentist';
 //  * anything ambiguous (system, crown type, quantity, dictated price vs list) becomes a question and
 //    the line stays "TBC" (excluded from the total) until it is answered. Nothing is guessed.
-import { extract, byId, IMPLANT_SYSTEMS, CROWNS, FAMILY_RE, familyOf, eur, itemLabel, codeOf } from './extract.js?v=5';
-import { CATALOG } from '../catalog.js?v=5';
+import { extract, byId, IMPLANT_SYSTEMS, CROWNS, FAMILY_RE, familyOf, eur, itemLabel, codeOf } from './extract.js?v=7';
+import { CATALOG } from '../catalog.js?v=7';
 
 const PRIORITY = { high: 0, medium: 1, low: 2 };
 const QTY_REQUIRED = ['implant', 'abutment', 'tempcrown', 'crown', 'gingival', 'scan'];
