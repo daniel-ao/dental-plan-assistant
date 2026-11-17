@@ -25,8 +25,18 @@ jobs:
           node-version: 22
       - name: Unit tests (extraction, planning, questions, revisions, injection guard)
         run: npm test
-      - name: Build static site
+      - name: Build static site (latest version, main link)
         run: npm run build
+      - name: Build frozen versions (one folder each, see releases.txt)
+        run: |
+          grep -v '^#' releases.txt | while read -r folder branch tag; do
+            [ -z "$folder" ] && continue
+            git fetch --depth=1 origin "$branch"
+            git worktree add "$RUNNER_TEMP/$folder" FETCH_HEAD
+            (cd "$RUNNER_TEMP/$folder" && node scripts/build.mjs)
+            cp -r "$RUNNER_TEMP/$folder/dist" "dist/$folder"
+            echo "Built $branch into /$folder/"
+          done
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -45,3 +55,24 @@ jobs:
         continue-on-error: true
       - id: deployment
         uses: actions/deploy-pages@v4
+
+  releases:
+    # Creates the GitHub release for each frozen version, once.
+    if: github.ref == 'refs/heads/main'
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create missing releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          grep -v '^#' releases.txt | while read -r folder branch tag; do
+            [ -z "$folder" ] && continue
+            gh release view "$tag" >/dev/null 2>&1 && continue
+            sha=$(git ls-remote origin "refs/heads/$branch" | cut -f1)
+            gh release create "$tag" --target "$sha" --title "$tag" \
+              --notes "Frozen version of the app, always available at https://daniel-ao.github.io/dental-plan-assistant/$folder/"
+          done

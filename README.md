@@ -59,3 +59,10 @@ npm start         # http://localhost:8080 (any static server works)
 
 ## Limits of the POC
 No authentication or server storage: versions live in the browser session. "Send to patient" downloads the approved PDF and opens a pre-filled email. Images are attached to the PDF manually, and no X-ray interpretation is done. Extraction rules are tuned to the client's notes and price list.
+
+## Versions
+
+- Latest version (always the newest `main`): https://daniel-ao.github.io/dental-plan-assistant/
+- v1.0, frozen on 17 November 2026: https://daniel-ao.github.io/dental-plan-assistant/v1/
+
+Frozen versions are listed in `releases.txt`. To freeze another one, push a branch such as `release/v2` from the commit you want and add the line `v2 release/v2 v2.0`. The next deploy publishes it at `/v2/` and creates the GitHub release.
