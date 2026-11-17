@@ -6,9 +6,14 @@ import { renderPdf } from './pdf.js?v=5';
 import { SAMPLES } from './samples.js?v=5';
 
 const $ = id => document.getElementById(id);
-const eur = n => (n == null ? 'TBC' : '€' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+const eur = n => (n == null ? 'To confirm' : '€' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
+const MIC = '<svg class="ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
+const STOP = '<svg class="ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"/></svg>';
+// Plain-language labels for dentists; internal status names stay unchanged.
+const STATUS_LABEL = { 'Draft': 'Draft', 'Missing Information': 'Questions to answer', 'Awaiting Dentist Review': 'Ready for your review', 'Changes Requested': 'Updated, please review', 'Approved': 'Approved', 'Sent to Patient': 'Sent to patient' };
+const PRIORITY_LABEL = { high: 'Needs your answer', medium: 'Please confirm', low: 'Optional' };
 const ICON = {
   lock: '<svg class="ic" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
   check: '<svg class="ic" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -18,7 +23,7 @@ const S = { answers: {}, pending: {}, corrections: [], versions: [], images: [],
 const STATUS_STEP = { 'Draft': 1, 'Missing Information': 2, 'Awaiting Dentist Review': 3, 'Changes Requested': 3, 'Approved': 4, 'Sent to Patient': 4 };
 
 function setStatus(s) {
-  S.status = s; $('status').textContent = s;
+  S.status = s; $('status').textContent = STATUS_LABEL[s] || s;
   const step = STATUS_STEP[s];
   document.querySelectorAll('#steps li').forEach(li => { const n = +li.dataset.s; li.className = n === step ? 'on' : n < step ? 'done' : ''; });
 }
@@ -28,14 +33,14 @@ const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 function attachMic(btn, target, append = true) {
   let rec = null, base = '';
   btn.onclick = () => {
-    if (!SR) { $('micHint').textContent = 'Voice capture is not supported in this browser (use Chrome / Edge / Safari). You can type or paste the dictation instead.'; return; }
+    if (!SR) { $('micHint').textContent = 'Voice dictation needs Chrome, Edge or Safari. You can type the plan in the box below instead.'; return; }
     if (rec) { rec.stop(); return; }
     rec = new SR(); rec.lang = $('lang').value; rec.continuous = true; rec.interimResults = true;
     base = append && target.value ? target.value.trimEnd() + '\n' : '';
     rec.onresult = e => { let txt = ''; for (const r of e.results) txt += r[0].transcript; target.value = base + txt.replace(/\b(stage \w+)/gi, '\n$1'); };
-    rec.onerror = e => { $('micHint').textContent = 'Microphone error: ' + e.error + '. You can type instead.'; };
-    rec.onend = () => { btn.classList.remove('rec'); btn.innerHTML = btn === $('mic') ? '<span>●</span> Record' : '<span>●</span> Speak'; rec = null; };
-    rec.start(); btn.classList.add('rec'); btn.innerHTML = '<span>■</span> Stop';
+    rec.onerror = e => { $('micHint').textContent = (e.error === 'not-allowed' ? 'The microphone is blocked. Allow it in your browser, or type the plan below.' : 'The microphone stopped (' + e.error + '). You can try again or type the plan below.'); };
+    rec.onend = () => { btn.classList.remove('rec'); btn.innerHTML = MIC + (btn === $('mic') ? ' Start dictating' : ' Speak'); rec = null; };
+    rec.start(); btn.classList.add('rec'); btn.innerHTML = STOP + ' Stop';
   };
 }
 attachMic($('mic'), $('transcript'));
@@ -97,7 +102,7 @@ $('reset').onclick = () => { Object.assign(S, { answers: {}, pending: {}, correc
 // ---------- Approval gate (Delivery Agent) ----------
 $('approve').onclick = () => {
   const v = S.versions.at(-1);
-  if (v.open.length && !confirm(`Version ${v.n} still has ${v.open.length} open question(s). Approve anyway?`)) return;
+  if (v.open.length && !confirm(`Version ${v.n} still has ${v.open.length} unanswered ${v.open.length === 1 ? 'question' : 'questions'}. Approve it anyway?`)) return;
   v.approvedAt = new Date().toISOString();
   v.doc = renderPdf(v.plan, { version: v.n, status: 'Approved', approvedAt: v.approvedAt, open: [], images: S.images });
   v.url = URL.createObjectURL(v.doc.output('blob'));
@@ -117,30 +122,30 @@ function render() {
   const c = S.current, last = S.versions.at(-1);
   $('applyAnswers').disabled = !c; $('applyCorrection').disabled = !c;
   $('approve').disabled = !last || S.approvedVersion === last.n;
-  $('approve').textContent = last ? `Approve v${last.n}` : 'Approve';
+  $('approve').textContent = last ? `Approve version ${last.n}` : 'Approve';
   const approved = !!S.approvedVersion && S.approvedVersion === last?.n;
   $('download').disabled = !approved; $('send').disabled = !approved;
   $('gate').className = 'gate' + (approved ? ' ok' : '');
-  $('gate').innerHTML = approved ? `${ICON.check}<span>v${S.approvedVersion} is approved (${esc(last.by)}). Download and sending are unlocked.</span>` : `${ICON.lock}<span>Download and sending unlock only after explicit dentist approval of the latest version.</span>`;
-  if (!c) { $('summary').innerHTML = 'No plan yet. Dictate the treatment or load a sample, then press Build plan.'; $('questions').innerHTML = ''; $('plan').innerHTML = ''; $('versions').innerHTML = ''; $('diff').innerHTML = ''; return; }
+  $('gate').innerHTML = approved ? `${ICON.check}<span>Version ${S.approvedVersion} is approved (${esc(last.by)}). You can now download or email it.</span>` : `${ICON.lock}<span>You can download or send the PDF once you have approved it.</span>`;
+  if (!c) { $('summary').className = 'summary empty'; $('summary').innerHTML = 'Your plan will appear here once you press <b>Create treatment plan</b>.'; $('questions').innerHTML = ''; $('plan').innerHTML = ''; $('versions').innerHTML = ''; $('diff').innerHTML = ''; return; }
   const p = c.plan;
   $('summary').className = 'summary';
-  $('summary').innerHTML = `<div class="pill main"><small>Total estimate${p.tbcCount ? ', excluding TBC' : ''}</small><b>${eur(p.total)}</b></div><div class="pill"><small>Stages</small><b>${p.stages.length}</b></div><div class="pill${p.tbcCount ? ' attn' : ''}"><small>Items TBC</small><b>${p.tbcCount}</b></div><div class="pill${c.open.length + S.guard.length ? ' attn' : ''}"><small>Open questions</small><b>${c.open.length + S.guard.length}</b></div>`;
-  const guardHtml = S.guard.map(f => `<div class="q"><div class="meta">high · security</div><p>Suspicious instruction ignored (${esc(f.why)}): “${esc(f.snippet)}”. It was treated as data and not acted on.</p></div>`).join('');
+  $('summary').innerHTML = `<div class="pill main"><small>Estimated total${p.tbcCount ? ' (not counting prices to confirm)' : ''}</small><b>${eur(p.total)}</b></div><div class="pill"><b>${p.stages.length}</b> ${p.stages.length === 1 ? 'stage' : 'stages'}</div><div class="pill${p.tbcCount ? ' attn' : ''}"><b>${p.tbcCount}</b> ${p.tbcCount === 1 ? 'price' : 'prices'} to confirm</div><div class="pill${c.open.length + S.guard.length ? ' attn' : ''}"><b>${c.open.length + S.guard.length}</b> ${c.open.length + S.guard.length === 1 ? 'question' : 'questions'} left</div>`;
+  const guardHtml = S.guard.map(f => `<div class="q"><div class="meta">Ignored for safety</div><p>This sentence looked like an instruction to the app, not part of the plan, so it was not applied: “${esc(f.snippet)}”.</p></div>`).join('');
   $('questions').innerHTML = guardHtml + c.questions.map(q => {
     const val = S.pending[q.id] ?? q.answer;
-    return `<div class="q ${q.priority} ${q.answer != null ? 'answered' : ''}" data-q="${esc(q.id)}"><div class="meta">${q.priority} · ${esc(q.category)}${q.answer != null ? ' · answered' : ''}</div><p>${esc(q.text)}</p>
-      <div class="opts">${q.options.map(o => `<button data-v="${esc(o.value)}" class="${val === o.value ? 'sel' : ''}">${esc(o.label)}</button>`).join('')}${q.free || !q.options.length ? `<input placeholder="Type answer…" value="${val != null && !q.options.some(o => o.value === val) ? esc(val) : ''}">` : ''}</div></div>`;
-  }).join('') || '<p class="muted">No open questions. The plan is complete and ready for review.</p>';
+    return `<div class="q ${q.priority} ${q.answer != null ? 'answered' : ''}" data-q="${esc(q.id)}"><div class="meta">${q.answer != null ? 'Answered' : PRIORITY_LABEL[q.priority] || 'Please confirm'}</div><p>${esc(q.text)}</p>
+      <div class="opts">${q.options.map(o => `<button data-v="${esc(o.value)}" class="${val === o.value ? 'sel' : ''}">${esc(o.label)}</button>`).join('')}${q.free || !q.options.length ? `<input placeholder="Or type your answer" value="${val != null && !q.options.some(o => o.value === val) ? esc(val) : ''}">` : ''}</div></div>`;
+  }).join('') || `<p class="done-note">${ICON.check}No questions left. Check the plan, then approve it on the right.</p>`;
   document.querySelectorAll('.q[data-q]').forEach(el => {
     const id = el.dataset.q;
     el.querySelectorAll('button').forEach(b => b.onclick = () => { S.pending[id] = b.dataset.v; el.querySelectorAll('button').forEach(x => x.classList.toggle('sel', x === b)); });
     const inp = el.querySelector('input'); if (inp) inp.oninput = () => { if (inp.value.trim()) S.pending[id] = inp.value.trim(); else delete S.pending[id]; };
   });
-  $('plan').innerHTML = p.stages.map(s => `<div class="stagehead">Stage ${s.number} · ${esc(s.title)} <span class="muted">· ${esc(s.interval || 'timing TBC')}</span></div>
-    <table><tr><th>Procedure</th><th>Teeth</th><th>Qty</th><th>Unit</th><th>Disc.</th><th>Amount</th></tr>${s.items.map(i => `<tr class="${i.status === 'tbc' ? 'tbc' : ''}" title="Source: ${esc(i.source)}"><td>${esc(i.name)}${i.priceSource === 'dentist' ? ' <small class="muted">(dentist price)</small>' : ''}</td><td>${esc((i.teeth || []).join(', '))}</td><td>${i.qty}</td><td class="r">${eur(i.unitPrice)}</td><td>${i.discountPct ? i.discountPct + '%' : ''}</td><td class="r">${eur(i.lineTotal)}</td></tr>`).join('')}
+  $('plan').innerHTML = p.stages.map(s => `<div class="stagehead">Stage ${s.number} · ${esc(s.title)} <span class="muted">${esc(s.interval || 'timing to confirm')}</span></div>
+    <table><tr><th>Treatment</th><th>Tooth</th><th>Qty</th><th>Price</th><th>Discount</th><th>Amount</th></tr>${s.items.map(i => `<tr class="${i.status === 'tbc' ? 'tbc' : ''}" title="Source: ${esc(i.source)}"><td>${esc(i.name)}${i.priceSource === 'dentist' ? ' <small class="muted">(your price)</small>' : ''}</td><td>${esc((i.teeth || []).join(', '))}</td><td>${i.qty}</td><td class="r">${eur(i.unitPrice)}</td><td>${i.discountPct ? i.discountPct + '%' : ''}</td><td class="r">${eur(i.lineTotal)}</td></tr>`).join('')}
     <tr><td colspan="5"><b>Subtotal</b></td><td class="r"><b>${eur(s.subtotal)}</b></td></tr></table>`).join('');
-  $('versions').innerHTML = S.versions.slice().reverse().map(v => `<li data-v="${v.n}" class="${v.n === last.n ? 'cur' : ''}"><span><b>v${v.n}</b> · ${esc(v.summary)}<br><small>${new Date(v.at).toLocaleTimeString()} · ${esc(v.by)} · ${eur(v.plan.total)} · ${v.open.length} open${v.approvedAt ? ' · <span class="ok">approved</span>' : ''}${v.sentAt ? ' · sent' : ''}</small></span></li>`).join('');
+  $('versions').innerHTML = S.versions.slice().reverse().map(v => `<li data-v="${v.n}" class="${v.n === last.n ? 'cur' : ''}"><span><b>Version ${v.n}</b> · ${esc(v.summary)}<br><small>${new Date(v.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · ${eur(v.plan.total)}${v.open.length ? ` · ${v.open.length} ${v.open.length === 1 ? 'question' : 'questions'} left` : ''}${v.approvedAt ? ' · <span class="ok">approved</span>' : ''}${v.sentAt ? ' · sent' : ''}</small></span></li>`).join('');
   document.querySelectorAll('#versions li').forEach(li => li.onclick = () => showVersion(+li.dataset.v));
 }
 
@@ -148,16 +153,16 @@ function showVersion(n) {
   const v = S.versions.find(x => x.n === n); if (!v) return;
   $('pdf').src = v.url; $('pdf').style.display = 'block'; $('pdfEmpty').style.display = 'none';
   const prev = S.versions.find(x => x.n === n - 1);
-  $('diff').innerHTML = prev ? `<b>Changes v${prev.n} → v${v.n}</b><ul>${diffPlans(prev, v).map(d => `<li>${esc(d)}</li>`).join('') || '<li>No field changes</li>'}</ul>` : '';
+  $('diff').innerHTML = prev ? `<b>What changed since version ${prev.n}</b><ul>${diffPlans(prev, v).map(d => `<li>${esc(d)}</li>`).join('') || '<li>No changes to the plan</li>'}</ul>` : '';
 }
 function diffPlans(a, b) {
-  const out = [], key = p => { const m = new Map(); p.stages.forEach(s => s.items.forEach(i => m.set(`S${s.number} ${i.name}`, i))); return m; };
+  const out = [], key = p => { const m = new Map(); p.stages.forEach(s => s.items.forEach(i => m.set(`Stage ${s.number}: ${i.name}`, i))); return m; };
   const A = key(a.plan), B = key(b.plan);
-  for (const [k, i] of B) { const o = A.get(k); if (!o) out.push(`+ ${k} (${i.qty} × ${eur(i.unitPrice)})`); else if (o.qty !== i.qty || o.unitPrice !== i.unitPrice || o.discountPct !== i.discountPct) out.push(`~ ${k}: ${o.qty}×${eur(o.unitPrice)} −${o.discountPct}% → ${i.qty}×${eur(i.unitPrice)} −${i.discountPct}%`); }
-  for (const k of A.keys()) if (!B.has(k)) out.push(`− ${k}`);
-  a.plan.stages.forEach((s, i) => { const t = b.plan.stages[i]; if (t && s.interval !== t.interval) out.push(`Stage ${i + 1} timing: ${s.interval || 'TBC'} → ${t.interval}`); });
-  if (a.plan.total !== b.plan.total) out.push(`Total: ${eur(a.plan.total)} → ${eur(b.plan.total)}`);
-  out.push(`Open questions: ${a.open.length} → ${b.open.length}`);
+  for (const [k, i] of B) { const o = A.get(k); if (!o) out.push(`Added ${k} (${i.qty} × ${eur(i.unitPrice)})`); else if (o.qty !== i.qty || o.unitPrice !== i.unitPrice || o.discountPct !== i.discountPct) { const d = x => `${x.qty} × ${eur(x.unitPrice)}${x.discountPct ? `, ${x.discountPct}% off` : ''}`; out.push(`Changed ${k}: ${d(o)} → ${d(i)}`); }; }
+  for (const k of A.keys()) if (!B.has(k)) out.push(`Removed ${k}`);
+  a.plan.stages.forEach((s, i) => { const t = b.plan.stages[i]; if (t && s.interval !== t.interval) out.push(`Stage ${i + 1} timing: ${s.interval || 'to confirm'} → ${t.interval}`); });
+  if (a.plan.total !== b.plan.total) out.push(`New total: ${eur(a.plan.total)} → ${eur(b.plan.total)}`);
+  if (a.open.length !== b.open.length) out.push(`Questions left: ${a.open.length} → ${b.open.length}`);
   return out;
 }
 render();
