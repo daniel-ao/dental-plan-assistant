@@ -1,7 +1,7 @@
 // Clinical Information Extraction Agent (deterministic, rule-based).
 // Turns a dictated transcript into stages + line items, keeping the source text of every item.
 // It NEVER invents a price: an item is priced only from the clinic price list or a dictated amount.
-import { CATALOG } from '../catalog.js?v=5';
+import { CATALOG } from '../catalog.js?v=7';
 
 export const byId = Object.fromEntries(CATALOG.map(c => [c.id, c]));
 const WORDNUM = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, a: 1, an: 1, single: 1, each: null };
