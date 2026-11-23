@@ -50,3 +50,14 @@
   - (−) The site is public, so it must only be used with fictional or anonymised data.
   - (−) There are no server-side features and no custom security headers beyond what Pages provides.
   - Production will move to EU/HDS-certified hosting.
+
+## ADR-005: French dictation through a phrase-level rewrite
+
+- **Status:** Accepted
+- **Context:** Voice capture already supported fr-FR, but the extraction rules were written for English notes, so a French note lost most of its treatments (for Patient 1, only 6 of 31 lines survived, mostly bare implant lines).
+- **Decision:** `src/engine/french.js` rewrites a French transcript, phrase by phrase, into the English wording the existing rules understand (treatments, tooth numbers, spoken numbers, prices, ranges, discounts, stages, intervals, and correction verbs such as « supprime », « déplace … en étape 3 »). It then puts the dentist's own French words back on notes, item sources and unpriced lines. Run-on voice transcripts with no punctuation are split before each treatment.
+- **Consequences:**
+  - (+) One set of rules and one pricing contract for both languages. Tests check that each French client note gives exactly the same plan, questions and total as the English one.
+  - (+) No new price logic, so French notes cannot bring in a price that is not on the list.
+  - (−) New French synonyms must be added to the phrase table. Unknown wording ends up as a note or a "not understood" correction, never as a guessed item.
+

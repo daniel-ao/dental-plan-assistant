@@ -97,6 +97,30 @@ The assistant applies only that change, shows a one-line summary and creates **P
 
 Each command creates a new version with a change summary. If a command is not understood, nothing changes and the assistant tells you so.
 
+## Dictating in French
+
+Choose **Français (fr-FR)** and dictate as you normally would, for example:
+
+> « Étape 1 : radio panoramique, hygiène préopératoire avec une remise de 10 %, extraction de la 36, pose d'un implant en 36, sédation 2 heures. Étape 2 après 3 mois : vis de cicatrisation sur un implant, scan d'un implant. Étape 3 après un mois : couronne zircone sur un implant, obturation du puits d'accès. »
+
+- A French note gives the same plan as the same note in English. Tooth numbers can be said as digits or words ("quarante-six"), prices as "1 200 €" or "630,50 euros", ranges as "2 à 3 implants" or "4 à 6 mois".
+- Prices still come only from the clinic price list. A price you dictate that differs from the list is asked, never used silently.
+- Your own words are kept on the plan for notes and for lines that are not in the price list. Price-list items keep their price-list name.
+- Sample: **Sample dictations → Démo en français**.
+
+Corrections work in French too:
+
+| Dites ou tapez | Effect |
+|---|---|
+| « Supprime la radiographie » | Removes that line |
+| « Déplace la vis de cicatrisation en étape 3 » | Moves the line to Stage 3 |
+| « Change le prix de l'implant à 1200 € » | Sets that unit price (marked as dictated) |
+| « Applique une remise de 20 % sur la couronne » | Discount on matching lines |
+| « Ajoute un guide chirurgical à l'étape 1 » | Adds the price-list item at list price |
+| « Change l'intervalle de l'étape 2 à 4 mois » | Updates the stage interval |
+| « Passe les implants en Straumann BLT » | Swaps the implant from the price list |
+| « Le patient s'appelle Jean Dupont » | Sets the patient name |
+
 ## Attaching an X-ray
 
 Use **Attach image** to add a radiograph or photo (JPG or PNG). It is embedded in the PDF on an "Images" page. Images stay in your browser.

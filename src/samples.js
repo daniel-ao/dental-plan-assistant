@@ -23,5 +23,9 @@ export const SAMPLES = [
  {
   "label": "Patient 5 (client notes)",
   "text": "• No bone in segment 4\n• Bone augmentation needed first\n• Will not be able to wear a removable denture during healing\n• Also prior bone grafting in segment 1\n• Currently wears removable dentures\n• Poland / Kherson region\n• Dr. R.A. will do the surgery\n• 1st visit – 3 days for bone augmentation\n• After 4–6 months: implants – 3 days\n• After 3–4 months: temporaries\n• Doesn't like her current crowns? She said those teeth need to be extracted because they are bad\n• The teeth are in normal condition – they do not need to be extracted\n• Segment 1: possibly lamina (bone shell) technique or sinus lift\n• 2 implants per side, but 3 teeth\n• Also wants restorative (therapeutic) treatment\n• No inflammation\n• Bone grafting 1,200–1,400 EUR per side\n• Implants 470 EUR and 890 EUR\n• Approximate estimate\n• Patient accommodation (rooms)\n• Will need to take it easy for a couple of days\n• Possibly refer for an examination in Poland\n• Switch to zirconia after 1 month or longer"
+ },
+ {
+  "label": "Démo en français : implant molaire 16",
+  "text": "Je recommande de remplacer la première molaire supérieure droite manquante, la dent 16, par un implant.\nÉtape 1 : bilan avec une radiographie dentaire, hygiène préopératoire, pose d'un implant en 16.\nÉtape 2 : vis de cicatrisation sur 1 implant.\nÉtape 3 : couronne céramique sur 1 implant, obturation du puits d'accès de la vis."
  }
 ];

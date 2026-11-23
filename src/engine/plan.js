@@ -6,8 +6,9 @@
 //    dentist explicitly dictated or typed, labelled priceSource 'dentist';
 //  * anything ambiguous (system, crown type, quantity, dictated price vs list) becomes a question and
 //    the line stays "TBC" (excluded from the total) until it is answered. Nothing is guessed.
-import { extract, byId, IMPLANT_SYSTEMS, CROWNS, FAMILY_RE, familyOf, eur, itemLabel, codeOf } from './extract.js?v=7';
-import { CATALOG } from '../catalog.js?v=7';
+import { extract, byId, IMPLANT_SYSTEMS, CROWNS, FAMILY_RE, familyOf, eur, itemLabel, codeOf } from './extract.js?v=8';
+import { CATALOG } from '../catalog.js?v=8';
+import { looksFrench, prepareFrench } from './french.js?v=8';
 
 const PRIORITY = { high: 0, medium: 1, low: 2 };
 const QTY_REQUIRED = ['implant', 'abutment', 'tempcrown', 'crown', 'gingival', 'scan'];
@@ -16,7 +17,16 @@ const distinctPrices = ids => uniq(ids.map(id => byId[id].price));
 const optId = id => ({ value: `id:${id}`, label: itemLabel(id) });
 
 export function buildPlan(transcript, answers = {}, meta = {}) {
+  // French dictation: rewrite into the engine's English phrasing, then put the dentist's own words back.
+  const fr = looksFrench(transcript) ? prepareFrench(transcript) : null;
+  if (fr) transcript = fr.text;
   const ex = extract(transcript || '');
+  if (fr) {
+    ex.notes = ex.notes.map(fr.restore);
+    for (const st of ex.stages) for (const i of st.items) i.source = fr.restore(i.source);
+    for (const h of ex.globalHints) h.source = fr.restore(h.source);
+    ex.negations = ex.negations.map(fr.restore);
+  }
   const Q = [];
   const ask = q => { if (!Q.some(x => x.id === q.id)) { q.answer = answers[q.id]; Q.push(q); } return answers[q.id]; };
 
@@ -213,7 +223,7 @@ export function buildPlan(transcript, answers = {}, meta = {}) {
       if (it.flags.includes('notInPriceList')) {
         const a = ask({ id: `${qid}.manual`, priority: 'medium', category: 'Pricing', text: `"${it.source}" is not in the clinic price list. Enter a price in EUR, or exclude it from the quote.`, options: [{ value: '0', label: 'Exclude from quote' }], free: true });
         if (a != null && +a === 0) continue;
-        item.name = it.source.replace(/^\W+/, '');
+        item.name = it.source.replace(/^[^\p{L}\d]+/u, '');
         if (a != null) { item.unitPrice = +a; item.priceSource = 'dentist'; } else tbc('not in price list');
       }
       item.discountPct = Math.max(item.discountPct, globalPct(it));
