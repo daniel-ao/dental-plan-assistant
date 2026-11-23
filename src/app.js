@@ -1,9 +1,9 @@
 // UI orchestrator: wires the agents together and owns state, versions and the approval gate.
-import { buildPlan } from './engine/plan.js?v=7';
-import { applyCorrection } from './engine/revise.js?v=7';
-import { guardText } from './engine/guard.js?v=7';
-import { renderPdf } from './pdf.js?v=7';
-import { SAMPLES } from './samples.js?v=7';
+import { buildPlan } from './engine/plan.js?v=8';
+import { applyCorrection } from './engine/revise.js?v=8';
+import { guardText } from './engine/guard.js?v=8';
+import { renderPdf } from './pdf.js?v=8';
+import { SAMPLES } from './samples.js?v=8';
 
 const $ = id => document.getElementById(id);
 const eur = n => (n == null ? 'To confirm' : '€' + Number(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
@@ -37,7 +37,7 @@ function attachMic(btn, target, append = true) {
     if (rec) { rec.stop(); return; }
     rec = new SR(); rec.lang = $('lang').value; rec.continuous = true; rec.interimResults = true;
     base = append && target.value ? target.value.trimEnd() + '\n' : '';
-    rec.onresult = e => { let txt = ''; for (const r of e.results) txt += r[0].transcript; target.value = base + txt.replace(/\b(stage \w+)/gi, '\n$1'); };
+    rec.onresult = e => { let txt = ''; for (const r of e.results) txt += r[0].transcript; target.value = base + txt.replace(/(?<![\p{L}])((?:stage|étape|etape) \S+)/giu, '\n$1'); };
     rec.onerror = e => { $('micHint').textContent = (e.error === 'not-allowed' ? 'The microphone is blocked. Allow it in your browser, or type the plan below.' : 'The microphone stopped (' + e.error + '). You can try again or type the plan below.'); };
     rec.onend = () => { btn.classList.remove('rec'); btn.innerHTML = MIC + (btn === $('mic') ? ' Start dictating' : ' Speak'); rec = null; };
     rec.start(); btn.classList.add('rec'); btn.innerHTML = STOP + ' Stop';
@@ -48,7 +48,7 @@ attachMic($('mic2'), $('correction'), false);
 
 // ---------- Samples & images ----------
 SAMPLES.forEach((s, i) => $('sample').insertAdjacentHTML('beforeend', `<option value="${i}">${esc(s.label)}</option>`));
-$('sample').onchange = e => { const s = SAMPLES[e.target.value]; if (s) { $('transcript').value = s.text; $('patient').value = s.label.startsWith('Demo') ? 'Jane Doe' : ''; } };
+$('sample').onchange = e => { const s = SAMPLES[e.target.value]; if (s) { $('transcript').value = s.text; $('patient').value = /^D[eé]mo/.test(s.label) ? 'Jane Doe' : ''; } };
 $('img').onchange = async e => {
   for (const f of e.target.files) {
     const dataUrl = await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(f); });

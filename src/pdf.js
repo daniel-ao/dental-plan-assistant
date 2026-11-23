@@ -4,7 +4,7 @@
 // Every amount printed here comes straight from the plan; the PDF never computes or rounds prices
 // differently from the engine, and every price-list line shows its section and code.
 
-import { stageColour, toothStates, stageShares, iconFor, UPPER, LOWER } from './glance.js?v=7';
+import { stageColour, toothStates, stageShares, iconFor, UPPER, LOWER } from './glance.js?v=8';
 
 const C = {
   ink: [11, 37, 64], muted: [79, 100, 120], line: [213, 230, 242], sunk: [234, 245, 253], paper: [244, 250, 255],
